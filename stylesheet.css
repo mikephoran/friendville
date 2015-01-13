@@ -1,0 +1,55 @@
+body {
+    background-image: url('pent.png');
+
+}
+.container{
+	float: right;
+}
+
+.menu {
+  background-color: white;
+  border: 2px solid black;
+  border-radius: 5px;
+  padding: 5px;
+  margin: 5px;
+  clear: left;
+}
+
+.friend {
+  border: 2px solid black;
+  border-radius: 100%;
+  padding: 5px;
+  margin: 5px;
+  clear: left;
+  float: left;
+  width: 200px;
+  height: 200px;
+  background-size: 210px 210px;
+  background-color: white;
+  background-repeat: no-repeat;
+  color: red;
+  text-align: center;
+  font-size: 410%;
+  font-weight: 1000;
+  line-height: 350px; 
+}
+.farm {
+  width: 70%;
+  float: left;
+  display: block;
+}
+.leftside {
+  display: block;
+  float: left;
+}
+
+.stats {
+  display:block;
+  margin-top: 30px;
+  float: right;
+  width: 250px;
+  height: 160px;
+  background-color: white;
+  border-radius: 5px;
+  border: 2px solid black;
+}
