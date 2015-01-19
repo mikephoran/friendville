@@ -1,14 +1,16 @@
-angular.module('friendville', ['ngFx', 'firebase'])
+angular.module('friendville', ['ngFx'])
 
-.controller('AddController', function($scope, FriendFactory) {
-	
+.controller('FarmController', function($scope, $interval, FriendFactory) {
+
+
+
+//Menu for Adding Friends
 	$scope.menu = {
 		name: null,
 		phone: null,
 		img: null,
 		importance: null,
-		need: null,
-		health: 50
+		health: 100
 	};
 
 	$scope.friendButton = 'Add Friend';
@@ -18,92 +20,92 @@ angular.module('friendville', ['ngFx', 'firebase'])
 		$scope.showhide = !$scope.showhide;
 	};
 
-	$scope.addFriend = function() {
-		FriendFactory.convertImgToBase64($scope.menu.img, function(base64Img) {
-			$scope.menu.img = base64Img;
-		});
-		FriendFactory.addFriend($scope.menu);
-	}
-
-})
-
-.controller('FarmController', function($scope, FriendFactory, $firebase, $interval) {
-	
-	var ref = new Firebase("https://flickering-inferno-160.firebaseio.com/");
-	var sync = $firebase(ref);	
-	var friends = sync.$asArray();
-	
+//Friend Profile Information
+	$scope.friendarray = [];
 	$scope.sms = '';
 
-	$scope.deleteFriend = function(i) {
-		console.log('deleting friend ', i);
-		FriendFactory.deleteFriend(i);
-		$scope.$apply();
+//Methods
+	$scope.getAllFriends = function() {
+		FriendFactory.getAllFriends(function(data) {
+			$scope.friendarray = data;
+			console.log($scope.friendarray)
+		})
 	}
 
-	$scope.sendText = function(i) {
-		console.log('sending text')
-		friends[i].health = friends[i].health + 20;
-		$scope.$apply();
-		friends.$save(i);
+	//Fetch all friends from DB and check every 5 seconds for updates to health
+	$scope.getAllFriends();
+	$interval($scope.getAllFriends, 5000);
+
+	$scope.addFriend = function() {
+		console.log($scope.menu)
+		FriendFactory.addFriend($scope.menu, $scope.getAllFriends);
 	}
 
-	friends.$loaded()
-	.then(function() {
-		$scope.friendarray = friends;
-	})
-	.then(function() {
-		$interval(function() {
-			for (var i=0; i<$scope.friendarray.length; i++) {
-				if ($scope.friendarray[i].health > 0) {
-					$scope.friendarray[i].health--;
-				} else if ($scope.friendarray[i].health === 0) {
-					$scope.friendarray[i].img = 'foreveralone.png'
-					friends.$save(i);	
-				}
-				
-			} 
-		}, 1000);	
-	})
+	$scope.deleteFriend = function(friendname) {
+		FriendFactory.deleteFriend(friendname, $scope.getAllFriends);
+	}
+
+	$scope.sendText = function(message, phone, name, importance) {
+		FriendFactory.sendText(message, phone, FriendFactory.increaseHealth.bind(this, name, importance, $scope.getAllFriends))
+	}
 })
 
 	
-.factory('FriendFactory', function($firebase) {
+.factory('FriendFactory', function($http) {
 
-	var ref = new Firebase("https://flickering-inferno-160.firebaseio.com/");
-	var sync = $firebase(ref);	
-	var friends = sync.$asArray();
-	
-
-	var addFriend = function(friend) {
-		friends.$add(friend);
+	var addFriend = function(friend, callback) {
+		console.log('Adding friend named ', friend);
+		$http.post('/addFriend', friend)
+		.success(function(data, status, headers, config) {
+			console.log('Succesfully added friend');
+			callback();
+		})
+		.error(function(data, status, headers, config) {
+			console.log('Error adding friend');
+		});
 	}
 
-	var deleteFriend = function(friendindex) {
-		friends.$remove(friendindex)
+	var deleteFriend = function(friendname, callback) {
+		$http.post('/deleteFriend', {name: friendname})
+		.success(function(data, status, headers, config) {
+			console.log('Succesfully deleted ' + friendname);
+			callback();
+		})
+		.error(function(data, status, headers, config) {
+			console.log('Error deleting ' + friendname);
+		})
 	}
 
-	var convertImgToBase64 = function(url, callback, outputFormat){
-		var canvas = document.createElement('CANVAS');
-		var ctx = canvas.getContext('2d');
-		var img = new Image;
-		img.crossOrigin = 'Anonymous';
-		img.onload = function(){
-			canvas.height = 100;
-			canvas.width = 100;
-		  	ctx.drawImage(img,0,0);
-		  	var dataURL = canvas.toDataURL(outputFormat || 'image/png');
-		  	callback.call(this, dataURL);
-	        // Clean up
-		  	canvas = null; 
-		};
-		img.src = url;
+	var getAllFriends = function(callback) {
+		console.log('Getting all friends')
+		$http.get('/getAllFriends')
+		.success(function(data, status, headers, config) {
+			console.log('Succesfully got all friends')
+			callback(data);
+		})
+	}
+
+	var sendText = function(message, phone, callback) {
+		console.log('Sending text:  ' + message + ' to ' + phone);
+		$http.post('/sendText', {message: message, phone: phone})
+		.success(function(data, status, headers, config) {
+			callback();
+		})
+	}
+
+	var increaseHealth = function(name, importance, callback) {
+		$http.post('/increaseHealth', {name: name, importance: importance})
+		.success(function(data, status, headers, config) {
+			callback();
+		})
 	}
 
 	return {
 		addFriend: addFriend,
 		deleteFriend: deleteFriend,
-		convertImgToBase64: convertImgToBase64,
+		getAllFriends: getAllFriends,
+		sendText: sendText,
+		increaseHealth: increaseHealth
 	}
 
 })
@@ -127,19 +129,6 @@ angular.module('friendville', ['ngFx', 'firebase'])
     }
 }])
 
-// $http.post('http://textbelt.com/text', {msg:'hello word!'}).
-//   success(function(data, status, headers, config) {
-//     // this callback will be called asynchronously
-//     // when the response is available
-//   }).
-//   error(function(data, status, headers, config) {
-//     // called asynchronously if an error occurs
-//     // or server returns response with an error status.
-//   });
-
-  //+1 805-324-6030
-//   var accountSid = 'ACb96552b64852d2beafcab1c90c0fdec2'; 
-// var authToken = '[AuthToken]';
 
 
  

@@ -3,6 +3,11 @@
   "version": "0.0.1",
   "main": "app.js",
   "dependencies": {
-    "firebase": "^1.1.2"
+    "body-parser": "^1.10.1",
+    "express": "^4.11.0",
+    "morgan": "^1.5.1",
+    "oauth20-provider": "^0.3.5",
+    "redis": "^0.12.1",
+    "twilio": "^1.10.0"
   }
 }
