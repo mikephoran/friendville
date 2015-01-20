@@ -1,9 +1,11 @@
 var redis = require('redis')
 var client = redis.createClient();
-
 var accountSid = "ACb96552b64852d2beafcab1c90c0fdec2";
 var authToken = "461c2758cdb74058700561e4ee45776a";
 var twilio = require('twilio')(accountSid, authToken);
+
+module.exports.anything = 'whatever';
+
 
 exports.addFriend = function(req, res) {
   var name = req.body.name;
@@ -64,7 +66,6 @@ exports.getAllFriends = function(req, res) {
 } 
 
 exports.sendText = function(req, res) {
-  
   twilio.messages.create(
   {
     body: req.body.message,
@@ -83,8 +84,6 @@ exports.sendText = function(req, res) {
 }
 
 exports.increaseHealth = function(req, res) {
-
-
   var name = req.body.name;
   var importance; 
   req.body.importance ? importance = req.body.importance : importance = 5;
@@ -98,4 +97,47 @@ exports.increaseHealth = function(req, res) {
     }
   })
 }
+
+//Incrementally Decrement Friend Health
+var decrementSpeed = 1000 *  10;  //Loses 1 health every 10 seconds for demonstration purposes
+
+var globalDecrement = function() {
+  console.log('Begin Global Decrement')
+  client.keys('*', function(error, result) {
+    var multi = client.multi();
+    var total = result.length;
+    var i = 0;
+
+    if (total === 0) {
+      return;
+    }
+
+    result.forEach(function (key) {
+
+      var currentkey = key;
+
+      client.hget(currentkey, 'health', function(error, result) {
+        
+        if (result > 0) {
+         
+          client.hincrby(key, 'health', -1, function(error, result) {
+            i++;
+            if (i === total) {
+              console.log('Global Decrement Complete')
+              return;
+            } 
+          })
+        } else {
+          i++;
+          if (i === total) {
+            console.log('Global Decrement Complete')
+            return;
+          } 
+        }
+      })
+    })
+  })
+}
+
+setInterval(globalDecrement, decrementSpeed);
         
