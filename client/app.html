@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.19/angular.js"></script>
+	<script src="https://cdn.firebase.com/js/client/1.0.21/firebase.js"></script>
+	<script src="https://cdn.firebase.com/libs/angularfire/0.8.2/angularfire.min.js"></script>
+    <script src="app.js"></script>
+    <script src="bower_components/ngFx/dist/ngFx.min.js"></script>
+	<link type="text/css" rel="stylesheet" href="stylesheet.css"/>
+</head>
+<body ng-app="friendville" ng-controller="FarmController" >
+<div class = "farm"> 
+	<div ng-repeat="friend in friendarray" class = "leftside">
+        <span class = "friend" ng-style = "{'background-image': 'url({{friend.img}})'}">{{friend.health.toString()}}</span>
+        <span class = "stats"> 
+            <table>
+                <tr>
+                    <td> Name: </td>
+                    <td> <strong> {{friend.name}} </strong></td>
+                </tr>
+                <tr> 
+                    <td> Phone: </td>
+                    <td> <strong> {{friend.phone}} </strong></td>
+                </tr>
+                <tr>
+                    <td> Importance: </td>
+                    <td> <strong> {{friend.importance}} </strong></td>
+                </tr>
+                <tr> 
+                    <td valign="top"> Text: </td>
+                    <td><input type="text" name="sms" ng-model = "sms">
+                        <input ng-click="sendText(sms, friend.phone, friend.name, friend.importance)" type="submit" value="Submit"> </td>
+                </tr>
+                <tr> 
+                    <td valign="top"> Email: </td>
+                    <td><input type="text" name="sms" ng-model = "sms">
+                        <input ng-click="sendText(sms, friend.phone, friend.name, friend.importance)" type="submit" value="Submit"> </td>
+                </tr>
+                <tr> 
+                    <td valign="top"> Other Options: </td>
+                    <td><button ng-click="deleteFriend(friend.name)">Delete Friend</button> </td>
+                </tr>
+            </table>
+
+        </span>
+	</div>
+</div>
+
+<div class="container" >
+    <div class="menu">
+        <h3 ng-click="toggle()">    ADD A FRIEND    </h3>
+        <form name="input" method="get" ng-show="showhide" class="fx-fade-normal fx-speed-1000 fx-easing-bounce"> 
+        	Name:  <input type="text" name="name" ng-model = "menu.name"><p>
+        	Phone: <input type="tel" name="number" ng-model = "menu.phone"><p>
+        	Image: <input type="file" fileread="menu.img"><p>
+        	Importance: <br>
+        	<input type="radio" name="importance" value="1" ng-model = "menu.importance">1
+        	<input type="radio" name="importance" value="2" ng-model = "menu.importance">2
+        	<input type="radio" name="importance" value="3" ng-model = "menu.importance">3
+        	<input type="radio" name="importance" value="4" ng-model = "menu.importance">4
+        	<input type="radio" name="importance" value="5" ng-model = "menu.importance">5<br>
+            (1 most important, 5 least important)<p>
+
+        	<input ng-click="addFriend()" type="submit" value="Submit">
+        </form>
+    </div>
+    <div align="right">
+<a href="/account">Account Info</a> | 
+<a href="/logout">Logout </a>
+</div>
+</div>
+
+
+
+
+</body>
+</html>
+
+
+</form>

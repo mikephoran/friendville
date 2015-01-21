@@ -1,11 +1,9 @@
 var redis = require('redis')
 var client = redis.createClient();
+var db = require('./db')
 var accountSid = "ACb96552b64852d2beafcab1c90c0fdec2";
 var authToken = "461c2758cdb74058700561e4ee45776a";
 var twilio = require('twilio')(accountSid, authToken);
-
-module.exports.anything = 'whatever';
-
 
 exports.addFriend = function(req, res) {
   var name = req.body.name;

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Friendville</title>
+  </head>
+  <body background="pent.png">
+  <h1><center> FRIENDVILLE </center></h1>
+  <h3><center> A parody game for keeping in touch with friends </center></h3>
+    <% if (!user) {  %>
+      <p><center>
+      <a href="/auth/facebook">Log in with Facebook</a>
+      </center></p>
+    <% } else { %>
+      <p>
+      <a href="/app">Friendville App</a> | 
+      <a href="/account">Account</a> | 
+      <a href="/logout">Log Out</a>
+      </p>
+    <% } %>
+
+  </body>
+</html>
