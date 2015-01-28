@@ -7,8 +7,8 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var session = require('cookie-session')
 var app = express();
-var redis = require('redis')
-var client = redis.createClient();
+// var redis = require('redis')
+// var client = redis.createClient();
 var passport = require('passport');
 var FacebookStrategy = require('passport-facebook').Strategy;
 var db = require('./db')
@@ -29,6 +29,8 @@ app.use(session({
     }
   })
 );
+
+//Initialize Passport and Initialize Sessions for Passport
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -43,17 +45,21 @@ passport.use(new FacebookStrategy({
 function(accessToken, refreshToken, profile, done) {
   //Facebook sends back the profile information
   //Check if User already exists in DB
-  db.FbUsers.findOne({fbId: profile.id}, function(err, oldUser) {
+  console.log('FB RESPONSE: ', accessToken, refreshToken, profile)
+
+  db.fbUser.findOne({fbId: profile.id}, function(err, oldUser) {
     //User Exists, so don't overwrite. Continue with Old User.
     if (oldUser) {
       done(null, oldUser);
     } else {
-      console.log(profile)
       //User didn't Exist, make new User and Continue with it
-      var newUser = new db.FbUsers({
+      var newUser = new db.fbUser({
         fbId: profile.id,
         email : profile.emails[0].value,
-        name: profile.displayName
+        name: profile.displayName,
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+        friends: {}
       }).save(function(err, newUser) {
         if(err) throw err;
         done(null, newUser);
@@ -68,7 +74,7 @@ passport.serializeUser(function(user,done) {
 });
 
 passport.deserializeUser(function(id, done) {
-  db.FbUsers.findById(id, function(err, user) {
+  db.fbUser.findById(id, function(err, user) {
     if (err) done (err);
     if(user) {
       done(null, user);
@@ -81,7 +87,7 @@ passport.deserializeUser(function(id, done) {
 
 // Redirect the user to Facebook for authentication.  When complete,
 // Facebook will redirect the user back to the application at /auth/facebook/callback
-app.get('/auth/facebook', passport.authenticate('facebook', { scope : "email"}));
+app.get('/auth/facebook', passport.authenticate('facebook', { scope : ["email", "user_friends", "publish_actions"]}));
 
 // Facebook will redirect the user to this URL after approval.  Finish the
 // authentication process by attempting to obtain an access token.  If
@@ -96,12 +102,11 @@ app.get('/', function(req, res){
   if (!req.isAuthenticated()) {
     res.render('index', { user: req.user });
   } else {
-    res.sendfile('app.html',{root: './../client/', user: req.user })
+    res.sendFile('app.html',{root: './../client/', user: req.user })
  }
 });
 
 app.get('/account', ensureAuthenticated, function(req, res){
-  console.log(req.user)
   res.render('account', { user: req.user });
 });
 
@@ -120,6 +125,7 @@ app.post('/deleteFriend', routes.deleteFriend);
 app.get('/getAllFriends', routes.getAllFriends);
 app.post('/sendText', routes.sendText);
 app.post('/increaseHealth', routes.increaseHealth);
+app.get('/pullFriendsList', routes.pullFriendsList);
 
 
 //Authentication Helper Function

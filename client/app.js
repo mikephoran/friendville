@@ -1,34 +1,32 @@
-angular.module('friendville', ['ngFx'])
+angular.module('friendville', ['ngFx', 'angucomplete-alt'])
 
 .controller('FarmController', function($scope, $interval, FriendFactory) {
 
-
-
 //Menu for Adding Friends
-	$scope.menu = {
-		name: null,
-		phone: null,
-		img: null,
-		importance: null,
-		health: 100
-	};
+	$scope.phone
+	$scope.fbFriends = [];
+	$scope.showMenu = false;
 
+	FriendFactory.pullFriendsList(function(data) {
+		console.log('DATA from Pull FriendsList: ', data.data)
+		$scope.fbFriends = data.data;
+	});
+	
 	$scope.friendButton = 'Add Friend';
-	$scope.showhide = false;
 
 	$scope.toggle = function() {
-		$scope.showhide = !$scope.showhide;
+		console.log('toggling')
+		$scope.showMenu = !$scope.showMenu;
 	};
 
 //Friend Profile Information
-	$scope.friendarray = [];
+	$scope.friends = {};
 	$scope.sms = '';
 
 //Methods
 	$scope.getAllFriends = function() {
 		FriendFactory.getAllFriends(function(data) {
-			$scope.friendarray = data;
-			console.log($scope.friendarray)
+			$scope.friends= data;
 		})
 	}
 
@@ -36,9 +34,9 @@ angular.module('friendville', ['ngFx'])
 	$scope.getAllFriends();
 	$interval($scope.getAllFriends, 5000);
 
-	$scope.addFriend = function() {
-		console.log($scope.menu)
-		FriendFactory.addFriend($scope.menu, $scope.getAllFriends);
+	$scope.addFriend = function(fbData, phone, callback) {
+		FriendFactory.addFriend($scope.selectedFriend.originalObject, $scope.phone, $scope.getAllFriends);
+		$scope.toggle();
 	}
 
 	$scope.deleteFriend = function(friendname) {
@@ -53,11 +51,13 @@ angular.module('friendville', ['ngFx'])
 	
 .factory('FriendFactory', function($http) {
 
-	var addFriend = function(friend, callback) {
-		console.log('Adding friend named ', friend);
-		$http.post('/addFriend', friend)
+	var addFriend = function(fbData, phone, callback) {
+		
+		var friendData = {fbId: fbData.id, name: fbData.name, phone: phone, img: fbData.picture.data.url, health: 100}
+		
+		$http.post('/addFriend', friendData)
 		.success(function(data, status, headers, config) {
-			console.log('Succesfully added friend');
+
 			callback();
 		})
 		.error(function(data, status, headers, config) {
@@ -65,14 +65,13 @@ angular.module('friendville', ['ngFx'])
 		});
 	}
 
-	var deleteFriend = function(friendname, callback) {
-		$http.post('/deleteFriend', {name: friendname})
+	var deleteFriend = function(fbId, callback) {
+		$http.post('/deleteFriend', {fbId: fbId})
 		.success(function(data, status, headers, config) {
-			console.log('Succesfully deleted ' + friendname);
 			callback();
 		})
 		.error(function(data, status, headers, config) {
-			console.log('Error deleting ' + friendname);
+			console.log('Error deleting friend');
 		})
 	}
 
@@ -81,6 +80,7 @@ angular.module('friendville', ['ngFx'])
 		$http.get('/getAllFriends')
 		.success(function(data, status, headers, config) {
 			console.log('Succesfully got all friends')
+			console.log(data)
 			callback(data);
 		})
 	}
@@ -100,12 +100,20 @@ angular.module('friendville', ['ngFx'])
 		})
 	}
 
+	var pullFriendsList = function(callback) {
+		$http.get('/pullFriendsList')
+		.success(function(data, status, headers, config) {
+			callback(data);
+		})
+	}
+
 	return {
 		addFriend: addFriend,
 		deleteFriend: deleteFriend,
 		getAllFriends: getAllFriends,
 		sendText: sendText,
-		increaseHealth: increaseHealth
+		increaseHealth: increaseHealth,
+		pullFriendsList: pullFriendsList
 	}
 
 })
