@@ -43,7 +43,7 @@ app.use(passport.session());
 passport.use(new FacebookStrategy({
   clientID: '1416386561985917',
   clientSecret: '2f94f17d29c8289b00245b29ae45ba63',
-  callbackURL: '/auth/facebook/callback'
+  callbackURL: 'http://localhost:3000/auth/facebook/callback'
 },
 function(accessToken, refreshToken, profile, done) {
   //Facebook sends back the profile information
@@ -74,7 +74,7 @@ function(accessToken, refreshToken, profile, done) {
 passport.use(new TwitterStrategy({
   consumerKey: CONSUMER_KEY,
   consumerSecret: CONSUMER_SECRET,
-  callbackURL: '/auth/twitter/callback',
+  callbackURL: 'http://localhost:3000/auth/twitter/callback',
   passReqToCallback: true
 },
 function(req, token, tokenSecret, profile, done) {
