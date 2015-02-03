@@ -6,23 +6,17 @@ var config = require('./config');
 var twilio = require('twilio')(config.accountSid, config.authToken);
 
 exports.addFriend = function(req, res) {
-  var fbId = req.body.fbId
-  var name = req.body.name;
-  var phone = req.body.phone;
-  var image = req.body.img;
-  var health = req.body.health;
-
-  var user = req.user;
 
   //Find the Logged In User by ID
-  fbUser.findById(user._id, 'friends', function (err, fbuser) {
+  fbUser.findById(req.user._id, 'friends', function (err, fbuser) {
 
     //Modify that User's friends object
-    fbuser.friends[fbId] = {
-      name: name,
-      phone: phone,
-      image: image,
-      health: health
+    fbuser.friends[req.body.fbId] = {
+      twitterID: req.body.twitterID,
+      name: req.body.name,
+      phone: req.body.phone,
+      image: req.body.image,
+      health: req.body.health
     };
 
     //Flag the model as modified for saving purposes
@@ -193,13 +187,7 @@ exports.pullFBFriendsList = function(clientreq, clientres) {
 }
 
 exports.pullTwitterFriendsList = function(clientreq, clientres) {
-  
-  console.log('Twitter Token Secret', clientreq.user.twitterTokenSecret);
-  var data = querystring.stringify({
-    user_id: clientreq.user.twitterID
-  })
-  
-  
+
   var url  = 'https://api.twitter.com/1.1/friends/list.json';
   var oauth = {
     consumer_key: config.CONSUMER_KEY,
@@ -245,6 +233,36 @@ exports.tagInFBPost= function(clientreq, clientres) {
     clientres.status(res.statusCode).send(body);
     console.log(body)
     console.log(res.statusCode)
+  })
+}
+
+exports.sendTwitterMessage = function(clientreq, clientres) {
+
+  var url  = 'https://api.twitter.com/1.1/direct_messages/new.json';
+  var oauth = {
+    consumer_key: config.CONSUMER_KEY,
+    consumer_secret: config.CONSUMER_SECRET,
+    token: clientreq.user.twitterToken,
+    token_secret: clientreq.user.twitterTokenSecret
+  }
+  var qs = {
+      user_id: clientreq.body.twitterID,
+      text: clientreq.body.message
+  }
+  
+  console.log(qs)
+  
+  request.post({url: url, oauth: oauth, qs: qs, json: true}, function(err, res, body) {
+    if (err) {
+      console.log('Error sending Twitter Message: ', err)
+      clientres.status(res.statusCode).send(err)
+      return
+    }
+    clientres.status(res.statusCode).send(body);
+    console.log(body);
+    console.log(res.statusCode)
+    console.log('Successfully send Twitter Message');
+    return
   })
 }
 

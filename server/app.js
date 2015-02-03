@@ -11,13 +11,10 @@ var FacebookStrategy = require('passport-facebook').Strategy;
 var TwitterStrategy = require('passport-twitter').Strategy;
 var config = require('./config');
 
-
-
 //Require Friendville Modules
 var routes = require('./routes');
 var gamelogic = require('./gamelogic');
 var db = require('./db')
-
 
 //Configure Express using Sessions and Cookies
 app.set('views', __dirname + '/views');
@@ -38,7 +35,6 @@ app.use(session({
 //Initialize Passport and Initialize Sessions for Passport
 app.use(passport.initialize());
 app.use(passport.session());
-
 
 //Set the Strategies to be Initialized for use as Middleware
 passport.use(new FacebookStrategy({
@@ -162,6 +158,7 @@ app.get('/pullFBFriendsList', routes.pullFBFriendsList);
 app.get('/pullTwitterFriendsList', routes.pullTwitterFriendsList);
 app.post('/updateImage', routes.updateImage);
 app.post('/tagInFBPost', routes.tagInFBPost);
+app.post('/sendTwitterMessage', routes.sendTwitterMessage);
 
 
 //Authentication Helper Function

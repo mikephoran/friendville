@@ -14,8 +14,8 @@ angular.module('friendville', ['ngFx', 'angucomplete-alt'])
 	});
 	
 	FriendFactory.pullTwitterFriendsList(function(data) {
-		console.log('Data from Twitter FriendsList: ', data.data)
-		$scope.twitterFriends = data.data;
+		console.log('Data from Twitter FriendsList: ', data.users)
+		$scope.twitterFriends = data.users;
 	});
 	
 	$scope.friendButton = 'Add Friend';
@@ -30,6 +30,7 @@ angular.module('friendville', ['ngFx', 'angucomplete-alt'])
 	$scope.friends = {};
 	$scope.sms = '';
 	$scope.fbtag = '';
+	$scope.twitterMessage = '';
 
 //Methods
 	$scope.getAllFriends = function() {
@@ -42,8 +43,8 @@ angular.module('friendville', ['ngFx', 'angucomplete-alt'])
 	$scope.getAllFriends();
 	$interval($scope.getAllFriends, 5000);
 
-	$scope.addFriend = function(fbData, phone, callback) {
-		FriendFactory.addFriend($scope.selectedFriend.originalObject, $scope.phone, $scope.getAllFriends);
+	$scope.addFriend = function(fbData, twitterData, phone, callback) {
+		FriendFactory.addFriend($scope.selectedFBFriend.originalObject, $scope.selectedTwitterFriend.originalObject, $scope.phone, $scope.getAllFriends);
 		$scope.toggle();
 	}
 
@@ -59,22 +60,27 @@ angular.module('friendville', ['ngFx', 'angucomplete-alt'])
 		FriendFactory.tagInFBPost(fbID, message, FriendFactory.increaseHealth.bind(this, fbID, amount, $scope.getAllFriends))
 	}
 	
+	$scope.sendTwitterMessage = function(twitterID, fbID, message, amount) {
+		console.log('twitterID: ', twitterID)
+		FriendFactory.sendTwitterMessage(twitterID, message, FriendFactory.increaseHealth.bind(this, fbID, amount, $scope.getAllFriends))
+	}
+	
 	$scope.updateImage = function(fbId) {
 		console.log('image', $scope.image)
 		FriendFactory.updateImage(fbId, $scope.image, $scope.getAllFriends);
 	}
+	
+
 })
 
-	
 .factory('FriendFactory', function($http) {
 
-	var addFriend = function(fbData, phone, callback) {
-		
-		var friendData = {fbId: fbData.id, name: fbData.name, phone: phone, img: fbData.picture.data.url, health: 100}
-		
+	var addFriend = function(fbData, twitterData, phone, callback) {
+		var friendData = {fbId: fbData.id, twitterID: twitterData.id_str, name: fbData.name, phone: phone, image: fbData.picture.data.url, health: 100}
+
 		$http.post('/addFriend', friendData)
 		.success(function(data, status, headers, config) {
-
+			
 			callback();
 		})
 		.error(function(data, status, headers, config) {
@@ -137,6 +143,12 @@ angular.module('friendville', ['ngFx', 'angucomplete-alt'])
 		})
 	}
 	
+	var sendTwitterMessage = function(twitterID, message, callback) {
+		$http.post('/sendTwitterMessage', {twitterID: twitterID, message: message}).success(function (data, status, headers, config) {
+			callback(data)
+		})
+	}
+	
 	var updateImage = function(fbId, image, callback) {
 		$http.post('/updateImage', {fbId: fbId, image: image})
 		.success(function(data, status, headers, config) {
@@ -153,6 +165,7 @@ angular.module('friendville', ['ngFx', 'angucomplete-alt'])
 		pullFBFriendsList: pullFBFriendsList,
 		pullTwitterFriendsList: pullTwitterFriendsList,
 		tagInFBPost: tagInFBPost,
+		sendTwitterMessage: sendTwitterMessage,
 		updateImage: updateImage
 	}
 
@@ -176,7 +189,3 @@ angular.module('friendville', ['ngFx', 'angucomplete-alt'])
         }
     }
 }])
-
-
-
- 

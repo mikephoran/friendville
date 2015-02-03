@@ -34,6 +34,11 @@
                         <td><input type="text" name="fbtag" ng-model = "fbtag">
                             <input ng-click="tagInFBPost(key, fbtag, 40)" type="submit" value="Submit"> </td>
                     </tr>
+                    <tr>
+                        <td value="top"> Twitter Message (+40 Health): </td>
+                        <td><input type="text" name="twitterMessage" ng-model = "twitterMessage">
+                            <input ng-click="sendTwitterMessage(value.twitterID, key, twitterMessage, 40)" type="submit" value="Submit"> </td>
+                    </tr>
                 </table>
             </div>
 
@@ -51,36 +56,27 @@
         
         <div ng-show="showMenu" class="submenu">
 
-
-            Name:
+            Facebook:
             <div>
-               
-                <angucomplete-alt id="ex2" placeholder="Enter a friend's name" pause="300" selected-object="selectedFriend" local-data="fbFriends" search-fields="name" title-field="name" image-field="picture.data.url" minlength="1" input-class="form-control form-control-small" matchclass="highlight" />
-
+                <angucomplete-alt id="ex2" placeholder="Enter your friend's Facebook name" pause="300" selected-object="selectedFBFriend" local-data="fbFriends" search-fields="name" title-field="name" image-field="picture.data.url" minlength="1" input-class="form-control form-control-small" matchclass="highlight" />
             </div>
-
             <br>
-            
+            Twitter:
+            <div>
+                <angucomplete-alt id="ex2" placeholder="Enter your friend's Twitter name" pause="300" selected-object="selectedTwitterFriend" local-data="twitterFriends" search-fields="name" title-field="name" image-field="profile_image_url" minlength="1" input-class="form-control form-control-small" matchclass="highlight" />
+            </div>
+            <br>
             Phone: <br>
-            <input class="form-control" type="tel" name="number" ng-model = "phone"><p>
-            
-
-
+            <input class="form-control" type="tel" name="number" placeholder="Enter your friend's phone number" ng-model = "phone"><p>
 
             <input ng-click="addFriend()" type="submit" value="Submit">
         </div>
-
     </div>
 </div>
         <div class="accountinfo" align="right">
             <a href="/account"><strong>Account Info</strong></a> | 
             <a href="/logout"><strong>Logout</strong> </a>
         </div>
-
-
-
-
-
 </body>
 </html>
 
