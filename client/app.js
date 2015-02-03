@@ -61,7 +61,6 @@ angular.module('friendville', ['ngFx', 'angucomplete-alt'])
 	}
 	
 	$scope.sendTwitterMessage = function(twitterID, fbID, message, amount) {
-		console.log('twitterID: ', twitterID)
 		FriendFactory.sendTwitterMessage(twitterID, message, FriendFactory.increaseHealth.bind(this, fbID, amount, $scope.getAllFriends))
 	}
 	
@@ -107,22 +106,7 @@ angular.module('friendville', ['ngFx', 'angucomplete-alt'])
 			callback(data);
 		})
 	}
-
-	var sendText = function(message, phone, callback) {
-		console.log('Sending text:  ' + message + ' to ' + phone);
-		$http.post('/sendText', {message: message, phone: phone})
-		.success(function(data, status, headers, config) {
-			callback();
-		})
-	}
-
-	var increaseHealth = function(fbId, amount, callback) {
-		$http.post('/increaseHealth', {fbId: fbId, amount: amount})
-		.success(function(data, status, headers, config) {
-			callback();
-		})
-	}
-
+	
 	var pullFBFriendsList = function(callback) {
 		$http.get('/pullFBFriendsList')
 		.success(function(data, status, headers, config) {
@@ -136,16 +120,41 @@ angular.module('friendville', ['ngFx', 'angucomplete-alt'])
 			callback(data);
 		})
 	}
-	
+
+	var sendText = function(message, phone, callback) {
+		console.log('Sending text:  ' + message + ' to ' + phone);
+		$http.post('/sendText', {message: message, phone: phone})
+		.success(function(data, status, headers, config) {
+			callback();
+		}).error(function(data, status, headers, config) {
+			alert('error sending text!');
+		})
+	}
+
 	var tagInFBPost = function(fbID, message, callback) {
-		$http.post('/tagInFBPost', {fbID: fbID, message: message}).success(function(data, status, headers, config) {
+		$http.post('/tagInFBPost', {fbID: fbID, message: message})
+		.success(function(data, status, headers, config) {
 			callback(data)
+		})
+		.error(function(data, status, headers, config) {
+			alert('Error Code: ' + data.errors[0].code + '\nError Message: ' + data.errors[0].message);
 		})
 	}
 	
 	var sendTwitterMessage = function(twitterID, message, callback) {
-		$http.post('/sendTwitterMessage', {twitterID: twitterID, message: message}).success(function (data, status, headers, config) {
+		$http.post('/sendTwitterMessage', {twitterID: twitterID, message: message})
+		.success(function (data, status, headers, config) {
 			callback(data)
+		})
+		.error(function(data, status, headers, config) {
+			alert('Error Code: ' + data.errors[0].code + '\nError Message: ' + data.errors[0].message);
+		})
+	}
+	
+	var increaseHealth = function(fbId, amount, callback) {
+		$http.post('/increaseHealth', {fbId: fbId, amount: amount})
+		.success(function(data, status, headers, config) {
+			callback();
 		})
 	}
 	
