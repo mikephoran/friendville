@@ -3,13 +3,19 @@ angular.module('friendville', ['ngFx', 'angucomplete-alt'])
 .controller('FarmController', function($scope, $interval, FriendFactory) {
 
 //Menu for Adding Friends
-	$scope.phone
+	$scope.phone;
 	$scope.fbFriends = [];
+	$scope.twitterFriends = [];
 	$scope.showMenu = false;
 
-	FriendFactory.pullFriendsList(function(data) {
-		console.log('DATA from Pull FriendsList: ', data.data)
+	FriendFactory.pullFBFriendsList(function(data) {
+		console.log('DATA from FB FriendsList: ', data.data)
 		$scope.fbFriends = data.data;
+	});
+	
+	FriendFactory.pullTwitterFriendsList(function(data) {
+		console.log('Data from Twitter FriendsList: ', data.data)
+		$scope.twitterFriends = data.data;
 	});
 	
 	$scope.friendButton = 'Add Friend';
@@ -20,8 +26,10 @@ angular.module('friendville', ['ngFx', 'angucomplete-alt'])
 	};
 
 //Friend Profile Information
+	$scope.image;
 	$scope.friends = {};
 	$scope.sms = '';
+	$scope.fbtag = '';
 
 //Methods
 	$scope.getAllFriends = function() {
@@ -43,8 +51,17 @@ angular.module('friendville', ['ngFx', 'angucomplete-alt'])
 		FriendFactory.deleteFriend(friendname, $scope.getAllFriends);
 	}
 
-	$scope.sendText = function(message, phone, name, importance) {
-		FriendFactory.sendText(message, phone, FriendFactory.increaseHealth.bind(this, name, importance, $scope.getAllFriends))
+	$scope.sendText = function(message, phone, fbId, amount) {
+		FriendFactory.sendText(message, phone, FriendFactory.increaseHealth.bind(this, fbId, amount, $scope.getAllFriends))
+	}
+	
+	$scope.tagInFBPost = function(fbID, message, amount) {
+		FriendFactory.tagInFBPost(fbID, message, FriendFactory.increaseHealth.bind(this, fbID, amount, $scope.getAllFriends))
+	}
+	
+	$scope.updateImage = function(fbId) {
+		console.log('image', $scope.image)
+		FriendFactory.updateImage(fbId, $scope.image, $scope.getAllFriends);
 	}
 })
 
@@ -93,17 +110,37 @@ angular.module('friendville', ['ngFx', 'angucomplete-alt'])
 		})
 	}
 
-	var increaseHealth = function(name, importance, callback) {
-		$http.post('/increaseHealth', {name: name, importance: importance})
+	var increaseHealth = function(fbId, amount, callback) {
+		$http.post('/increaseHealth', {fbId: fbId, amount: amount})
 		.success(function(data, status, headers, config) {
 			callback();
 		})
 	}
 
-	var pullFriendsList = function(callback) {
-		$http.get('/pullFriendsList')
+	var pullFBFriendsList = function(callback) {
+		$http.get('/pullFBFriendsList')
 		.success(function(data, status, headers, config) {
 			callback(data);
+		})
+	}
+	
+	var pullTwitterFriendsList = function(callback) {
+		$http.get('pullTwitterFriendsList')
+		.success(function(data, status, headers, config) {
+			callback(data);
+		})
+	}
+	
+	var tagInFBPost = function(fbID, message, callback) {
+		$http.post('/tagInFBPost', {fbID: fbID, message: message}).success(function(data, status, headers, config) {
+			callback(data)
+		})
+	}
+	
+	var updateImage = function(fbId, image, callback) {
+		$http.post('/updateImage', {fbId: fbId, image: image})
+		.success(function(data, status, headers, config) {
+			callback();
 		})
 	}
 
@@ -113,7 +150,10 @@ angular.module('friendville', ['ngFx', 'angucomplete-alt'])
 		getAllFriends: getAllFriends,
 		sendText: sendText,
 		increaseHealth: increaseHealth,
-		pullFriendsList: pullFriendsList
+		pullFBFriendsList: pullFBFriendsList,
+		pullTwitterFriendsList: pullTwitterFriendsList,
+		tagInFBPost: tagInFBPost,
+		updateImage: updateImage
 	}
 
 })

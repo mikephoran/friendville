@@ -1,16 +1,20 @@
 var express = require('express');
 var logger = require('morgan');
-var routes = require('./routes');
 var ip = process.env.IP || "127.0.0.1";
 var port = process.env.PORT || 3000;
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var session = require('cookie-session')
 var app = express();
-// var redis = require('redis')
-// var client = redis.createClient();
 var passport = require('passport');
 var FacebookStrategy = require('passport-facebook').Strategy;
+var TwitterStrategy = require('passport-twitter').Strategy;
+
+var CONSUMER_KEY =  '76G7VV685T4jVeeiAczt2rN0e'
+var CONSUMER_SECRET = '81LeVeP0zvcMjY1u60vwWCfG7ffL5VKu0KtroCPL8eHdiIyg5K'
+//Require Friendville Modules
+var routes = require('./routes');
+var gamelogic = require('./gamelogic');
 var db = require('./db')
 
 
@@ -36,16 +40,14 @@ app.use(passport.session());
 
 
 //Set the Strategies to be Initialized for use as Middleware
-//Using passport.authenticate("facebook") as middleware in a route will employ this FacebookStrategy
 passport.use(new FacebookStrategy({
   clientID: '1416386561985917',
   clientSecret: '03dbd3a3d3d2e927ad479dcd7f661756',
-  callbackURL: 'http://localhost:3000/auth/facebook/callback'
+  callbackURL: '/auth/facebook/callback'
 },
 function(accessToken, refreshToken, profile, done) {
   //Facebook sends back the profile information
   //Check if User already exists in DB
-  console.log('FB RESPONSE: ', accessToken, refreshToken, profile)
 
   db.fbUser.findOne({fbId: profile.id}, function(err, oldUser) {
     //User Exists, so don't overwrite. Continue with Old User.
@@ -69,6 +71,34 @@ function(accessToken, refreshToken, profile, done) {
 }
 ));
 
+passport.use(new TwitterStrategy({
+  consumerKey: CONSUMER_KEY,
+  consumerSecret: CONSUMER_SECRET,
+  callbackURL: '/auth/twitter/callback',
+  passReqToCallback: true
+},
+function(req, token, tokenSecret, profile, done) {
+  //Twitter sends back the profile information
+  //Add Twitter Token Information to User Profile
+  db.fbUser.findById(req.user._id, function(err, user) {
+    if (err) {
+      console.log('Error linking Twitter Account: ', err)
+    } else {
+      console.log('token and token secret', token, tokenSecret)
+      user.twitterID = profile.id;
+      user.twitterToken = token;
+      user.twitterTokenSecret = tokenSecret;
+      user.twitterPhoto = profile.photos[0].value;
+
+      user.save(function(err, updatedUser) {
+        if(err) throw err;
+        done(null, updatedUser)
+      })
+    }
+  })
+}));
+
+
 passport.serializeUser(function(user,done) {
   done(null, user.id);
 });
@@ -85,17 +115,18 @@ passport.deserializeUser(function(id, done) {
 
 //OAUTH ROUTES
 
-// Redirect the user to Facebook for authentication.  When complete,
-// Facebook will redirect the user back to the application at /auth/facebook/callback
+// Redirect the user to Facebook or Twitter for authentication.
 app.get('/auth/facebook', passport.authenticate('facebook', { scope : ["email", "user_friends", "publish_actions"]}));
+app.get('/auth/twitter', passport.authorize('twitter'));
 
-// Facebook will redirect the user to this URL after approval.  Finish the
-// authentication process by attempting to obtain an access token.  If
-// access was granted, the user will be logged in.  Otherwise,
-// authentication has failed.
+// Facebook or Twitter will redirect the user to this URL after approval.
 app.get('/auth/facebook/callback', 
   passport.authenticate('facebook', { successRedirect: '/app',
                                       failureRedirect: '/' }));
+
+app.get('/auth/twitter/callback', 
+  passport.authenticate('twitter', { successRedirect: '/app',
+                                      failureRedirect: '/account' }));
 
 //Page and Logout Routes
 app.get('/', function(req, res){
@@ -125,7 +156,10 @@ app.post('/deleteFriend', routes.deleteFriend);
 app.get('/getAllFriends', routes.getAllFriends);
 app.post('/sendText', routes.sendText);
 app.post('/increaseHealth', routes.increaseHealth);
-app.get('/pullFriendsList', routes.pullFriendsList);
+app.get('/pullFBFriendsList', routes.pullFBFriendsList);
+app.get('/pullTwitterFriendsList', routes.pullTwitterFriendsList);
+app.post('/updateImage', routes.updateImage);
+app.post('/tagInFBPost', routes.tagInFBPost);
 
 
 //Authentication Helper Function

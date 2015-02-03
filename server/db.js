@@ -12,9 +12,12 @@ var FacebookUserSchema = new mongoose.Schema({
     twiliophone: String,
     accessToken: String,
     refreshToken: String,
+    twitterID: String,
+    twitterToken: String,
+    twitterTokenSecret: String,
+    twitterPhoto: String,
     friends: { type: mongoose.Schema.Types.Mixed, default:  {} }
 });
 
 //Compile Schema into User Model
 exports.fbUser = mongoose.model('fbs',FacebookUserSchema);
-

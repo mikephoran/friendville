@@ -1,5 +1,3 @@
-// var redis = require('redis')
-// var client = redis.createClient();
 var fbUser = require('./db').fbUser
 var accountSid = "ACb96552b64852d2beafcab1c90c0fdec2";
 var authToken = "461c2758cdb74058700561e4ee45776a";
@@ -7,25 +5,29 @@ var twilio = require('twilio')(accountSid, authToken);
 var https = require('https');
 var appID = "1416386561985917"
 var clientToken = "4c80ae0d6944869c502d2cdab242ff4c";
+var request = require('request');
+var querystring = require('querystring');
+
+var CONSUMER_KEY =  '76G7VV685T4jVeeiAczt2rN0e'
+var CONSUMER_SECRET = '81LeVeP0zvcMjY1u60vwWCfG7ffL5VKu0KtroCPL8eHdiIyg5K'
 
 exports.addFriend = function(req, res) {
   var fbId = req.body.fbId
   var name = req.body.name;
   var phone = req.body.phone;
-  var img = req.body.img;
+  var image = req.body.img;
   var health = req.body.health;
 
   var user = req.user;
 
   //Find the Logged In User by ID
   fbUser.findById(user._id, 'friends', function (err, fbuser) {
-    console.log('fbuser:', fbuser.friends)
 
     //Modify that User's friends object
     fbuser.friends[fbId] = {
       name: name,
       phone: phone,
-      image: img,
+      image: image,
       health: health
     };
 
@@ -59,8 +61,6 @@ exports.deleteFriend = function(req, res) {
     
     //Delete the friend via fbId from the Friends obj
     delete fbuser.friends[fbId];
-    console.log('fbid:', fbId);
-    console.log('after deletion', fbuser.friends)
     
      //Flag the model as modified for saving purposes
     fbuser.markModified('friends');
@@ -71,7 +71,7 @@ exports.deleteFriend = function(req, res) {
     });
   })
   
-  //DEPRECATED REDIT VERSION
+  //DEPRECATED REDIS VERSION
   // client.del(name, function(error, result) {
   //   if (error) {
   //     console.log('Error deleting friend!');
@@ -135,33 +135,44 @@ exports.sendText = function(req, res) {
 }
 
 exports.increaseHealth = function(req, res) {
-  var name = req.body.name;
-  var importance; 
-  req.body.importance ? importance = req.body.importance : importance = 5;
-  console.log('increasing health', name, importance)
+  var user = req.user;
+  var fbId = req.body.fbId;
+  var amount = req.body.amount;
 
-  client.hincrby(name, 'health', 10*importance, function(error, result) {
-    if (error) {
-      res.status(400).send(error)
+  fbUser.findOne(user._id, 'friends', function(err, fbuser) {
+    if (err) {
+      res.status(400).send(error);
     } else {
+      fbuser.friends[fbId].health =  fbuser.friends[fbId].health+ amount;
+      fbuser.markModified('friends');
+      fbuser.save();
       res.status(200).end();
     }
-  })
+  });
+
+  // DEPRECATED REDIS VERSION
+  // client.hincrby(name, 'health', 10*importance, function(error, result) {
+  //   if (error) {
+  //     res.status(400).send(error)
+  //   } else {
+  //     res.status(200).end();
+  //   }
+  // })
 }
 
-exports.pullFriendsList = function(clientreq, clientres) {
-  
+exports.pullFBFriendsList = function(clientreq, clientres) {
+
   var options = {
     hostname: 'graph.facebook.com',
     method: 'GET',
-    path: '/v2.1/me/taggable_friends?access_token=' + clientreq.user.accessToken
+    path: '/v2.2/me/taggable_friends?access_token=' + clientreq.user.accessToken
   }
 
   //Start Request
   var req = https.request(options, function(res) {
   });
 
-    //When requestion gets response:
+    //When request gets response:
     req.on('response', function (response) {
       
       var data = "";
@@ -187,46 +198,128 @@ exports.pullFriendsList = function(clientreq, clientres) {
     req.end();
 }
 
-//Incrementally Decrement Friend Health
-var decrementSpeed = 1000 *  10;  //Loses 1 health every 10 seconds for demonstration purposes
-
-var globalDecrement = function() {
-  console.log('Begin Global Decrement')
-  client.keys('*', function(error, result) {
-    var multi = client.multi();
-    var total = result.length;
-    var i = 0;
-
-    if (total === 0) {
-      return;
+exports.pullTwitterFriendsList = function(clientreq, clientres) {
+  
+  console.log('Twitter Token Secret', clientreq.user.twitterTokenSecret);
+  var data = querystring.stringify({
+    user_id: clientreq.user.twitterID
+  })
+  
+  
+  var url  = 'https://api.twitter.com/1.1/friends/list.json';
+  var oauth = {
+    consumer_key: CONSUMER_KEY,
+    consumer_secret: CONSUMER_SECRET,
+    token: clientreq.user.twitterToken,
+    token_secret: clientreq.user.twitterTokenSecret
+  }
+  var qs = {
+    user_id: clientreq.user.twitterID
+  }
+  
+  request.get({url: url, oauth: oauth, qs: qs, json: true}, function(err, res, body) {
+    if (err) {
+      console.log('Error pulling Twitter friends list:', err)
+      clientres.status(res.statusCode).send(err)
+      return
     }
-
-    result.forEach(function (key) {
-
-      var currentkey = key;
-
-      client.hget(currentkey, 'health', function(error, result) {
-        
-        if (result > 0) {
-         
-          client.hincrby(key, 'health', -1, function(error, result) {
-            i++;
-            if (i === total) {
-              console.log('Global Decrement Complete')
-              return;
-            } 
-          })
-        } else {
-          i++;
-          if (i === total) {
-            console.log('Global Decrement Complete')
-            return;
-          } 
-        }
-      })
-    })
+    clientres.status(res.statusCode).send(body);
+    console.log(body);
+    console.log(res.statusCode)
+    console.log('successfully pulled twitter friends list')
+    return
   })
 }
 
-// setInterval(globalDecrement, decrementSpeed);
-        
+
+exports.tagInFBPost= function(clientreq, clientres) {
+  var message = clientreq.body.message;
+  var fbID = clientreq.body.fbID;
+  var data = querystring.stringify({access_token: clientreq.user.accessToken, message: message, place: '195383960551614', tags: fbID})
+
+  var options = {
+    uri: 'https://graph.facebook.com/v2.2/me/feed',
+    body: data
+  }
+
+  request.post(options, function(err, res, body) {
+    if (err) {
+      console.log ('tagInFBPost Error: ', err)
+      clientres.status(res.statusCode).send(err);
+      return
+    }
+    clientres.status(res.statusCode).send(body);
+    console.log(body)
+    console.log(res.statusCode)
+  })
+}
+
+exports.updateImage = function(req,res) {
+  var user = req.user;
+  var fbId = req.body.fbId;
+  var image = req.body.image;
+
+  fbUser.findOne(user._id, 'friends', function(err, fbuser) {
+    if (err) {
+      res.status(400).send(error);
+    } else {
+      fbuser.friends[fbId].image =  image;
+      fbuser.markModified('friends');
+      fbuser.save();
+      res.status(200).end();
+    }
+  });
+}
+
+
+
+
+
+
+//DEPRECATED FUNCTIONS FOR REFERENCE
+//
+//----------------------------
+//tagInFBPOST - HTTP Module Version
+//----------------------------
+// 
+// exports.tagInFBPost= function(clientreq, clientres) {
+  
+//   var message = clientreq.body.message;
+//   var fbID = clientreq.body.fbID;
+   
+//   var options = {
+//     hostname: 'graph.facebook.com',
+//     method: 'POST',
+//     path: '/v2.2/me/feed?access_token=' + clientreq.user.accessToken + '&' + 'message=' + message + '&' + 'place=195383960551614' + '&' + 'tags=' + fbID
+//   }
+  
+//   //Start Request
+//   var req = https.request(options, function(res) {
+//   });
+
+//     //When request gets response:
+//     req.on('response', function (response) {
+      
+//       var data = "";
+      
+//       //Data response means add to data variable
+//       response.on('data', function (chunk) {
+//         data += chunk;
+//       });
+      
+//       //End response means data collected, send back to client
+//       response.on('end', function(){
+//         clientres.send(data).end()
+//       });
+
+//     });
+
+//     //When it gets back Error, then console log it
+//     req.on('error', function(e) {
+//       console.error(e);
+//     });
+
+//     //Finishes sending the Request
+//     req.end();
+
+// }

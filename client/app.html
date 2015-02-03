@@ -25,29 +25,20 @@
             <div class="stat-options">
                 <table class="tables">
                     <tr> 
-                        <td valign="top"> Send Text (+10 Health): </td>
+                        <td valign="top"> Text Message  (+50 Health): </td>
                         <td><input type="text" name="sms" ng-model = "sms">
-                            <input ng-click="sendText(sms, value.phone, value.name, value.importance)" type="submit" value="Submit"> </td>
+                            <input ng-click="sendText(sms, value.phone, key, 50)" type="submit" value="Submit"> </td>
                     </tr>
                     <tr>
-                        <td value="top"> Facebook (+5 Health): </td>
-                        <td> //Facebook API// </td>
+                        <td value="top"> Facebook Post (+40 Health): </td>
+                        <td><input type="text" name="fbtag" ng-model = "fbtag">
+                            <input ng-click="tagInFBPost(key, fbtag, 40)" type="submit" value="Submit"> </td>
                     </tr>
                 </table>
             </div>
 
             <div class="additional-options">
-                 ________________________________________________ 
-                <table class="tables">
-                    <tr>
-                        <td> Update Image: </td>
-                        <td> <input type="file" fileread="menu.img"> </td>
-                    </tr>
-                    <tr>
-                        <td> Delete Friend: </td>
-                        <td><button ng-click="deleteFriend(key)">Delete Friend</button></td>
-                    </tr>
-                </table>
+            <button ng-click="deleteFriend(key)">Delete Friend</button>
             </div>
         </div>
 	</div>
