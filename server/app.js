@@ -42,7 +42,7 @@ app.use(passport.session());
 //Set the Strategies to be Initialized for use as Middleware
 passport.use(new FacebookStrategy({
   clientID: '1416386561985917',
-  clientSecret: '03dbd3a3d3d2e927ad479dcd7f661756',
+  clientSecret: '2f94f17d29c8289b00245b29ae45ba63',
   callbackURL: '/auth/facebook/callback'
 },
 function(accessToken, refreshToken, profile, done) {
