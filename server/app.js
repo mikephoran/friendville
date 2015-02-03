@@ -99,6 +99,7 @@ function(req, token, tokenSecret, profile, done) {
 }));
 
 
+
 passport.serializeUser(function(user,done) {
   done(null, user.id);
 });
