@@ -159,6 +159,7 @@ app.get('/pullTwitterFriendsList', routes.pullTwitterFriendsList);
 app.post('/updateImage', routes.updateImage);
 app.post('/tagInFBPost', routes.tagInFBPost);
 app.post('/sendTwitterMessage', routes.sendTwitterMessage);
+app.post('/tagInTweet', routes.tagInTweet);
 
 
 //Authentication Helper Function

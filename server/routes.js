@@ -13,6 +13,7 @@ exports.addFriend = function(req, res) {
     //Modify that User's friends object
     fbuser.friends[req.body.fbId] = {
       twitterID: req.body.twitterID,
+      twitterName: req.body.twitterName,
       name: req.body.name,
       phone: req.body.phone,
       image: req.body.image,
@@ -249,9 +250,7 @@ exports.sendTwitterMessage = function(clientreq, clientres) {
       user_id: clientreq.body.twitterID,
       text: clientreq.body.message
   }
-  
-  console.log(qs)
-  
+
   request.post({url: url, oauth: oauth, qs: qs, json: true}, function(err, res, body) {
     if (err) {
       console.log('Error sending Twitter Message: ', err)
@@ -262,6 +261,33 @@ exports.sendTwitterMessage = function(clientreq, clientres) {
     console.log(body);
     console.log(res.statusCode)
     console.log('Successfully send Twitter Message');
+    return
+  })
+}
+
+exports.tagInTweet = function(clientreq, clientres) {
+
+  var url  = 'https://api.twitter.com/1.1/statuses/update.json';
+  var oauth = {
+    consumer_key: config.CONSUMER_KEY,
+    consumer_secret: config.CONSUMER_SECRET,
+    token: clientreq.user.twitterToken,
+    token_secret: clientreq.user.twitterTokenSecret
+  }
+  var qs = {
+      status: clientreq.body.message
+  }
+  
+  request.post({url: url, oauth: oauth, qs: qs, json: true}, function(err, res, body) {
+    if (err) {
+      console.log('Error tagging in tweet: ', err)
+      clientres.status(res.statusCode).send(err)
+      return
+    }
+    clientres.status(res.statusCode).send(body);
+    console.log(body);
+    console.log(res.statusCode)
+    console.log('Successfully tagged friend in tweet');
     return
   })
 }

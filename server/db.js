@@ -13,6 +13,7 @@ var FacebookUserSchema = new mongoose.Schema({
     accessToken: String,
     refreshToken: String,
     twitterID: String,
+    twitterName: String,
     twitterToken: String,
     twitterTokenSecret: String,
     twitterPhoto: String,

@@ -31,7 +31,8 @@ angular.module('friendville', ['ngFx', 'angucomplete-alt'])
 	$scope.sms = '';
 	$scope.fbtag = '';
 	$scope.twitterMessage = '';
-
+	$scope.tweet;
+	
 //Methods
 	$scope.getAllFriends = function() {
 		FriendFactory.getAllFriends(function(data) {
@@ -64,6 +65,10 @@ angular.module('friendville', ['ngFx', 'angucomplete-alt'])
 		FriendFactory.sendTwitterMessage(twitterID, message, FriendFactory.increaseHealth.bind(this, fbID, amount, $scope.getAllFriends))
 	}
 	
+	$scope.tagInTweet = function(twitterName, fbID, tweet, amount) {
+		var parsedMessage = '@' + twitterName + ' - ' + tweet;
+		FriendFactory.tagInTweet(parsedMessage, FriendFactory.increaseHealth.bind(this, fbID, amount, $scope.getAllFriends))
+	}
 	$scope.updateImage = function(fbId) {
 		console.log('image', $scope.image)
 		FriendFactory.updateImage(fbId, $scope.image, $scope.getAllFriends);
@@ -75,11 +80,11 @@ angular.module('friendville', ['ngFx', 'angucomplete-alt'])
 .factory('FriendFactory', function($http) {
 
 	var addFriend = function(fbData, twitterData, phone, callback) {
-		var friendData = {fbId: fbData.id, twitterID: twitterData.id_str, name: fbData.name, phone: phone, image: fbData.picture.data.url, health: 100}
+		var friendData = {fbId: fbData.id, twitterID: twitterData.id_str, twitterName: twitterData.screen_name, name: fbData.name, phone: phone, image: fbData.picture.data.url, health: 100}
 
 		$http.post('/addFriend', friendData)
 		.success(function(data, status, headers, config) {
-			
+
 			callback();
 		})
 		.error(function(data, status, headers, config) {
@@ -151,6 +156,16 @@ angular.module('friendville', ['ngFx', 'angucomplete-alt'])
 		})
 	}
 	
+	var tagInTweet = function(message, callback) {
+		$http.post('/tagInTweet', {message:message})
+		.success(function (data, status, headers, config) {
+			callback(data)
+		})
+		.error(function(data, status, headers, config) {
+			alert('Error Code: ' + data.errors[0].code + '\nError Message: ' + data.errors[0].message);
+		})
+	}
+	
 	var increaseHealth = function(fbId, amount, callback) {
 		$http.post('/increaseHealth', {fbId: fbId, amount: amount})
 		.success(function(data, status, headers, config) {
@@ -170,11 +185,12 @@ angular.module('friendville', ['ngFx', 'angucomplete-alt'])
 		deleteFriend: deleteFriend,
 		getAllFriends: getAllFriends,
 		sendText: sendText,
-		increaseHealth: increaseHealth,
 		pullFBFriendsList: pullFBFriendsList,
 		pullTwitterFriendsList: pullTwitterFriendsList,
 		tagInFBPost: tagInFBPost,
 		sendTwitterMessage: sendTwitterMessage,
+		tagInTweet: tagInTweet,
+		increaseHealth: increaseHealth,
 		updateImage: updateImage
 	}
 
