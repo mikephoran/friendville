@@ -1,15 +1,9 @@
 var fbUser = require('./db').fbUser
-var accountSid = "ACb96552b64852d2beafcab1c90c0fdec2";
-var authToken = "461c2758cdb74058700561e4ee45776a";
-var twilio = require('twilio')(accountSid, authToken);
 var https = require('https');
-var appID = "1416386561985917"
-var clientToken = "4c80ae0d6944869c502d2cdab242ff4c";
 var request = require('request');
 var querystring = require('querystring');
-
-var CONSUMER_KEY =  '76G7VV685T4jVeeiAczt2rN0e'
-var CONSUMER_SECRET = '81LeVeP0zvcMjY1u60vwWCfG7ffL5VKu0KtroCPL8eHdiIyg5K'
+var config = require('./config');
+var twilio = require('twilio')(config.accountSid, config.authToken);
 
 exports.addFriend = function(req, res) {
   var fbId = req.body.fbId
@@ -208,8 +202,8 @@ exports.pullTwitterFriendsList = function(clientreq, clientres) {
   
   var url  = 'https://api.twitter.com/1.1/friends/list.json';
   var oauth = {
-    consumer_key: CONSUMER_KEY,
-    consumer_secret: CONSUMER_SECRET,
+    consumer_key: config.CONSUMER_KEY,
+    consumer_secret: config.CONSUMER_SECRET,
     token: clientreq.user.twitterToken,
     token_secret: clientreq.user.twitterTokenSecret
   }

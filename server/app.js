@@ -9,9 +9,10 @@ var app = express();
 var passport = require('passport');
 var FacebookStrategy = require('passport-facebook').Strategy;
 var TwitterStrategy = require('passport-twitter').Strategy;
+var config = require('./config');
 
-var CONSUMER_KEY =  '76G7VV685T4jVeeiAczt2rN0e'
-var CONSUMER_SECRET = '81LeVeP0zvcMjY1u60vwWCfG7ffL5VKu0KtroCPL8eHdiIyg5K'
+
+
 //Require Friendville Modules
 var routes = require('./routes');
 var gamelogic = require('./gamelogic');
@@ -41,8 +42,8 @@ app.use(passport.session());
 
 //Set the Strategies to be Initialized for use as Middleware
 passport.use(new FacebookStrategy({
-  clientID: '1416386561985917',
-  clientSecret: '2f94f17d29c8289b00245b29ae45ba63',
+  clientID: config.CLIENT_ID,
+  clientSecret: config.CLIENT_SECRET,
   callbackURL: 'http://localhost:3000/auth/facebook/callback'
 },
 function(accessToken, refreshToken, profile, done) {
@@ -72,8 +73,8 @@ function(accessToken, refreshToken, profile, done) {
 ));
 
 passport.use(new TwitterStrategy({
-  consumerKey: CONSUMER_KEY,
-  consumerSecret: CONSUMER_SECRET,
+  consumerKey: config.CONSUMER_KEY,
+  consumerSecret: config.CONSUMER_SECRET,
   callbackURL: 'http://localhost:3000/auth/twitter/callback',
   passReqToCallback: true
 },
