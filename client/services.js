@@ -46,9 +46,16 @@ app.factory('FriendFactory', function($http) {
       callback(data);
     })
   }
-
+  
+  var checkTwitterAccount = function(callback) {
+    $http.get('/checkTwitterAccount') 
+    .success(function(data, status, headers, config) {
+      callback(data)
+    })
+  }
+  
   var pullTwitterFriendsList = function(callback) {
-    $http.get('pullTwitterFriendsList')
+    $http.get('/pullTwitterFriendsList')
     .success(function(data, status, headers, config) {
       callback(data);
     })
@@ -109,8 +116,9 @@ app.factory('FriendFactory', function($http) {
     pullTwitterFriendsList: pullTwitterFriendsList,
     sendText: sendText,
     tagInFBPost: tagInFBPost,
+    checkTwitterAccount: checkTwitterAccount,
     sendTwitterMessage: sendTwitterMessage,
     tagInTweet: tagInTweet,
-    increaseHealth: increaseHealth,
+    increaseHealth: increaseHealth
   }
 })

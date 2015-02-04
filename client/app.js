@@ -8,6 +8,7 @@ app.controller('FarmController', function($scope, $interval, FriendFactory) {
 	$scope.fbFriends = [];
 	$scope.twitterFriends = [];
 	$scope.showMenu = false;
+	$scope.twitterAccount = false;
 
 //Friend Profile Variables
 	$scope.friends = {};
@@ -62,8 +63,15 @@ app.controller('FarmController', function($scope, $interval, FriendFactory) {
 		$scope.fbFriends = data.data;
 	});
 
-//Pull Twitter Friend Data
-	FriendFactory.pullTwitterFriendsList(function(data) {
-		$scope.twitterFriends = data.users;
-	});
+//Determine if User has logged into Twitter and, if so, pull Twitter Friend Data
+	FriendFactory.checkTwitterAccount(function(data) {
+		if (data === "true") {
+			$scope.twitterAccount = true;
+			FriendFactory.pullTwitterFriendsList(function(data) {
+				$scope.twitterFriends = data.users;
+			})
+		} else {
+			$scope.twitterAccount = false;
+		}
+	})
 })

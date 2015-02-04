@@ -12,6 +12,7 @@
 
 <% if (user.twitterID) {  %>
 Twitter ID: <%= user.twitterID %>
+<p> <a href="/logoutTwitter">Unlink your Twitter Account</a>
 <% } else { %>
 <p> <a href="/auth/twitter">Link Your Twitter Account </a>
 <% } %>

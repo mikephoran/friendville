@@ -149,17 +149,18 @@ app.get('/logout', function(req, res){
 });
 
 //Data Routes
+app.get('/logoutTwitter', routes.logoutTwitter);
 app.post('/addFriend', routes.addFriend);
 app.post('/deleteFriend', routes.deleteFriend);
 app.get('/getAllFriends', routes.getAllFriends);
-app.post('/sendText', routes.sendText);
-app.post('/increaseHealth', routes.increaseHealth);
+app.get('/checkTwitterAccount', routes.checkTwitterAccount);
 app.get('/pullFBFriendsList', routes.pullFBFriendsList);
 app.get('/pullTwitterFriendsList', routes.pullTwitterFriendsList);
-app.post('/updateImage', routes.updateImage);
+app.post('/sendText', routes.sendText);
 app.post('/tagInFBPost', routes.tagInFBPost);
-app.post('/sendTwitterMessage', routes.sendTwitterMessage);
 app.post('/tagInTweet', routes.tagInTweet);
+app.post('/sendTwitterMessage', routes.sendTwitterMessage);
+app.post('/increaseHealth', routes.increaseHealth);
 
 
 //Authentication Helper Function

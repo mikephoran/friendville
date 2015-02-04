@@ -10,16 +10,17 @@
     <link type="text/css" rel="stylesheet" href="bower_components/angucomplete/angucomplete.css">
     <link type="text/css" rel="stylesheet" href="bower_components/angucomplete-alt/angucomplete-alt.css">
     <link type="text/css" rel="stylesheet" href="stylesheet.css"/>
-
 </head>
+
 <body ng-app="friendville" ng-controller="FarmController" >
+
 <div class = "farm"> 
 	<div ng-repeat="(key, value) in friends" class = "each-friend">
-        <span class = "friend" ng-style = "{'background-image': 'url({{value.image}})'}">{{value.health.toString()}}</span>
-        <div class = "stats"> 
-            <div class="stat-title">
-            <center> <font size=6> {{value.name}} </font></center>                     
-            </div>
+                <span class = "friend" ng-style = "{'background-image': 'url({{value.image}})'}">{{value.health.toString()}}</span>
+                 <div class = "stats"> 
+                <div class="stat-title">
+                    <center> <font size=6> {{value.name}} </font></center>
+                 </div>
 
             <div class="stat-options">
                 <table class="tables">
@@ -29,19 +30,19 @@
                             <input ng-click="sendText(sms, value.phone, key, 50)" type="submit" value="Submit"> </td>
                     </tr>
                     <tr>
-                        <td value="top"> Facebook Post (+40 Health): </td>
+                        <td value="top"> Tag in FB Post (+40 Health): </td>
                         <td><input type="text" name="fbtag" ng-model = "fbtag">
                             <input ng-click="tagInFBPost(key, fbtag, 40)" type="submit" value="Submit"> </td>
+                    </tr>
+                    <tr>
+                        <td value="top"> Tag in Tweet (+30 Health): </td>
+                        <td><input type="text" name="tweet" ng-model = "tweet">
+                            <input ng-click="tagInTweet(value.twitterName, key, tweet, 30)" type="submit" value="Submit"> </td>
                     </tr>
                     <tr>
                         <td value="top"> Twitter Message (+40 Health): </td>
                         <td><input type="text" name="twitterMessage" ng-model = "twitterMessage">
                             <input ng-click="sendTwitterMessage(value.twitterID, key, twitterMessage, 40)" type="submit" value="Submit"> </td>
-                    </tr>
-                    <tr>
-                        <td value="top"> Public Tweet (+30 Health): </td>
-                        <td><input type="text" name="tweet" ng-model = "tweet">
-                            <input ng-click="tagInTweet(value.twitterName, key, tweet, 30)" type="submit" value="Submit"> </td>
                     </tr>
                 </table>
             </div>
@@ -65,11 +66,12 @@
                 <angucomplete-alt id="ex2" placeholder="Enter your friend's Facebook name" pause="300" selected-object="selectedFBFriend" local-data="fbFriends" search-fields="name" title-field="name" image-field="picture.data.url" minlength="1" input-class="form-control form-control-small" matchclass="highlight" />
             </div>
             <br>
-            Twitter:
-            <div>
+            Twitter: <a href="/auth/twitter" ng-if="!twitterAccount"> Log into Twitter</a>
+            <div ng-hide="!twitterAccount">
                 <angucomplete-alt id="ex2" placeholder="Enter your friend's Twitter name" pause="300" selected-object="selectedTwitterFriend" local-data="twitterFriends" search-fields="name" title-field="name" image-field="profile_image_url" minlength="1" input-class="form-control form-control-small" matchclass="highlight" />
             </div>
-            <br>
+            <p ng-if="!twitterAccount"></p>
+            <br ng-if="twitterAccount">
             Phone: <br>
             <input class="form-control" type="tel" name="number" placeholder="Enter your friend's phone number" ng-model = "phone"><p>
 
@@ -83,6 +85,3 @@
         </div>
 </body>
 </html>
-
-
-</form>

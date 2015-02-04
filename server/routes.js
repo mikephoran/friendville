@@ -5,6 +5,15 @@ var querystring = require('querystring');
 var config = require('./config');
 var twilio = require('twilio')(config.accountSid, config.authToken);
 
+exports.logoutTwitter = function(req, res) {
+  fbUser.findById(req.user._id, 'twitterID', function (err, fbuser) {
+    fbuser.twitterID = ''
+    fbuser.save(function() {
+      res.redirect('/')
+    })
+  })
+}
+
 exports.addFriend = function(req, res) {
 
   //Find the Logged In User by ID
@@ -207,13 +216,10 @@ exports.pullTwitterFriendsList = function(clientreq, clientres) {
       return
     }
     clientres.status(res.statusCode).send(body);
-    console.log(body);
-    console.log(res.statusCode)
     console.log('successfully pulled twitter friends list')
     return
   })
 }
-
 
 exports.tagInFBPost= function(clientreq, clientres) {
   var message = clientreq.body.message;
@@ -232,9 +238,15 @@ exports.tagInFBPost= function(clientreq, clientres) {
       return
     }
     clientres.status(res.statusCode).send(body);
-    console.log(body)
-    console.log(res.statusCode)
   })
+}
+
+exports.checkTwitterAccount = function(req, res) {
+  if (req.user.twitterID) {
+    res.status(200).send(true)
+  } else {
+    res.status(200).send(false)
+  }
 }
 
 exports.sendTwitterMessage = function(clientreq, clientres) {
@@ -250,7 +262,6 @@ exports.sendTwitterMessage = function(clientreq, clientres) {
       user_id: clientreq.body.twitterID,
       text: clientreq.body.message
   }
-
   request.post({url: url, oauth: oauth, qs: qs, json: true}, function(err, res, body) {
     if (err) {
       console.log('Error sending Twitter Message: ', err)
@@ -258,15 +269,12 @@ exports.sendTwitterMessage = function(clientreq, clientres) {
       return
     }
     clientres.status(res.statusCode).send(body);
-    console.log(body);
-    console.log(res.statusCode)
-    console.log('Successfully send Twitter Message');
+    console.log('Successfully sent Twitter Message');
     return
   })
 }
 
 exports.tagInTweet = function(clientreq, clientres) {
-
   var url  = 'https://api.twitter.com/1.1/statuses/update.json';
   var oauth = {
     consumer_key: config.CONSUMER_KEY,
@@ -285,31 +293,10 @@ exports.tagInTweet = function(clientreq, clientres) {
       return
     }
     clientres.status(res.statusCode).send(body);
-    console.log(body);
-    console.log(res.statusCode)
     console.log('Successfully tagged friend in tweet');
     return
   })
 }
-
-exports.updateImage = function(req,res) {
-  var user = req.user;
-  var fbId = req.body.fbId;
-  var image = req.body.image;
-
-  fbUser.findOne(user._id, 'friends', function(err, fbuser) {
-    if (err) {
-      res.status(400).send(error);
-    } else {
-      fbuser.friends[fbId].image =  image;
-      fbuser.markModified('friends');
-      fbuser.save();
-      res.status(200).end();
-    }
-  });
-}
-
-
 
 
 
