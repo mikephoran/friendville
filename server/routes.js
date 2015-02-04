@@ -122,27 +122,31 @@ exports.pullFBFriendsList = function(req, res) {
   })
 }
 
-exports.pullTwitterFriendsList = function(clientreq, clientres) {
-
-  var url  = 'https://api.twitter.com/1.1/friends/list.json';
-  var oauth = {
-    consumer_key: config.CONSUMER_KEY,
-    consumer_secret: config.CONSUMER_SECRET,
-    token: clientreq.user.twitterToken,
-    token_secret: clientreq.user.twitterTokenSecret
-  }
-  var qs = {
-    user_id: clientreq.user.twitterID
-  }
+exports.pullTwitterFriendsList = function(req, res) {
   
-  request.get({url: url, oauth: oauth, qs: qs, json: true}, function(err, res, body) {
-    if (err) {
-      console.log('Error pulling Twitter friends list:', err)
-      clientres.status(res.statusCode).send(err)
+  var options = {
+    url: 'https://api.twitter.com/1.1/friends/list.json',
+    oauth: {
+      consumer_key: config.CONSUMER_KEY,
+      consumer_secret: config.CONSUMER_SECRET,
+      token: req.user.twitterToken,
+      token_secret: req.user.twitterTokenSecret
+    },
+    qs: {
+      user_id: req.user.twitterID
+    }
+  };
+
+  var pullerChild = childProcess.fork("./friendpuller")
+  
+  pullerChild.send(options)
+  
+  pullerChild.on('message', function(data) {
+    if (data.err) {
+      res.status(400).send(data.err);
       return
     }
-    clientres.status(res.statusCode).send(body);
-    console.log('successfully pulled twitter friends list')
+    res.status(200).send(data.content)
     return
   })
 }
@@ -283,6 +287,3 @@ exports.tagInTweet = function(clientreq, clientres) {
   //   }
   // })
 // }
-
-
-// DEPRECATED HTTPS MODULE FUNCTIONS FOR REFERENCE
