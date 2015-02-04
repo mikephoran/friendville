@@ -1,6 +1,10 @@
 app.factory('FriendFactory', function($http) {
 
   var addFriend = function(fbData, twitterData, phone, callback) {
+    twitterData.id_str = twitterData.id_str || ' ';
+    twitterData.screen_name = twitterData.screen_name || ' ';
+    phone = phone || ' ';
+        
     var friendData = {
       fbId: fbData.id,
       twitterID: twitterData.id_str,

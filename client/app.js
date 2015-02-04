@@ -23,7 +23,11 @@ app.controller('FarmController', function($scope, $interval, FriendFactory) {
 	};
 
 	$scope.addFriend = function(fbData, twitterData, phone, callback) {
-		FriendFactory.addFriend($scope.selectedFBFriend.originalObject, $scope.selectedTwitterFriend.originalObject, $scope.phone, $scope.getAllFriends);
+		if ($scope.selectedTwitterFriend) {
+			FriendFactory.addFriend($scope.selectedFBFriend.originalObject, $scope.selectedTwitterFriend.originalObject, $scope.phone, $scope.getAllFriends);
+		} else {
+			FriendFactory.addFriend($scope.selectedFBFriend.originalObject, {}, $scope.phone, $scope.getAllFriends);
+		}
 		$scope.toggle();
 	}
 
@@ -56,7 +60,6 @@ app.controller('FarmController', function($scope, $interval, FriendFactory) {
 
 //Populate friends from database
 	$scope.getAllFriends();
-	$interval($scope.getAllFriends, 10000);
 
 //Pull Facebook Friend Data
 	FriendFactory.pullFBFriendsList(function(data) {

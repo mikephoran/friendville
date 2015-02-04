@@ -24,8 +24,8 @@
 
             <div class="stat-options">
                 <table class="tables">
-                    <tr> 
-                        <td valign="top"> Text Message  (+50 Health): </td>
+                    <tr ng-if="value.phone != ' ' "> 
+                        <td valign="top"> Text Message  (+50 Health):</td>
                         <td><input type="text" name="sms" ng-model = "sms">
                             <input ng-click="sendText(sms, value.phone, key, 50)" type="submit" value="Submit"> </td>
                     </tr>
@@ -34,12 +34,12 @@
                         <td><input type="text" name="fbtag" ng-model = "fbtag">
                             <input ng-click="tagInFBPost(key, fbtag, 40)" type="submit" value="Submit"> </td>
                     </tr>
-                    <tr>
+                    <tr ng-if="twitterAccount && value.twitterName != ' ' ">
                         <td value="top"> Tag in Tweet (+30 Health): </td>
                         <td><input type="text" name="tweet" ng-model = "tweet">
                             <input ng-click="tagInTweet(value.twitterName, key, tweet, 30)" type="submit" value="Submit"> </td>
                     </tr>
-                    <tr>
+                    <tr ng-if="twitterAccount && value.twitterID != ' ' ">
                         <td value="top"> Twitter Message (+40 Health): </td>
                         <td><input type="text" name="twitterMessage" ng-model = "twitterMessage">
                             <input ng-click="sendTwitterMessage(value.twitterID, key, twitterMessage, 40)" type="submit" value="Submit"> </td>
@@ -61,7 +61,7 @@
         
         <div ng-show="showMenu" class="submenu">
 
-            Facebook:
+            Facebook (required):
             <div>
                 <angucomplete-alt id="ex2" placeholder="Enter your friend's Facebook name" pause="300" selected-object="selectedFBFriend" local-data="fbFriends" search-fields="name" title-field="name" image-field="picture.data.url" minlength="1" input-class="form-control form-control-small" matchclass="highlight" />
             </div>

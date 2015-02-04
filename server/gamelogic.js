@@ -19,8 +19,6 @@ var globalDecrement = function() {
 var decrementSpeed = 1000 *  1200;  //Loses 1 health every 20 minutes
 setInterval(globalDecrement, decrementSpeed);
 
-
-
 //DEPRECATED REDIS VERSION
 //----------------------------
 // var globalDecrement = function() {  
