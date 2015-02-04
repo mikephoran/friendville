@@ -1,7 +1,7 @@
 var fbUser = require('./db').fbUser
-var https = require('https');
 var request = require('request');
 var querystring = require('querystring');
+var childProcess = require('child_process');
 var config = require('./config');
 var twilio = require('twilio')(config.accountSid, config.authToken);
 
@@ -99,42 +99,27 @@ exports.increaseHealth = function(req, res) {
   });
 }
 
-exports.pullFBFriendsList = function(clientreq, clientres) {
-
+exports.pullFBFriendsList = function(req, res) {
+  
   var options = {
-    hostname: 'graph.facebook.com',
-    method: 'GET',
-    path: '/v2.2/me/taggable_friends?access_token=' + clientreq.user.accessToken
-  }
-
-  //Start Request
-  var req = https.request(options, function(res) {
-  });
-
-    //When request gets response:
-    req.on('response', function (response) {
+        url: 'https://graph.facebook.com/v2.2/me/taggable_friends',
+        qs: {
+          access_token: req.user.accessToken
+        }
+      }
       
-      var data = "";
-      
-      //Data response means add to data variable
-      response.on('data', function (chunk) {
-        data += chunk;
-      });
-      
-      //End response means data collected, send back to client
-      response.on('end', function(){
-        clientres.send(data).end()
-      });
-
-    });
-
-    //When it gets back Error, then console log it
-    req.on('error', function(e) {
-      console.error(e);
-    });
-
-    //Finishes sending the Request
-    req.end();
+  var pullerChild = childProcess.fork("./friendpuller")
+  
+  pullerChild.send(options)
+  
+  pullerChild.on('message', function(data) {
+    if (data.err) {
+      res.status(400).send(data.err);
+      return
+    }
+    res.status(200).send(data.content)
+    return
+  })
 }
 
 exports.pullTwitterFriendsList = function(clientreq, clientres) {
@@ -298,3 +283,6 @@ exports.tagInTweet = function(clientreq, clientres) {
   //   }
   // })
 // }
+
+
+// DEPRECATED HTTPS MODULE FUNCTIONS FOR REFERENCE
