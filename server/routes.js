@@ -15,7 +15,6 @@ exports.logoutTwitter = function(req, res) {
 }
 
 exports.addFriend = function(req, res) {
-
   //Find the Logged In User by ID
   fbUser.findById(req.user._id, 'friends', function (err, fbuser) {
 
@@ -31,23 +30,12 @@ exports.addFriend = function(req, res) {
 
     //Flag the model as modified for saving purposes
     fbuser.markModified('friends');
-    
+
     //Save the User Model and Respond to Client
     fbuser.save(function() {
       res.status(200).end();
     });
-    
   })
- 
- //DEPRECATED REDIS VERSION
-  // client.hmset(name, 'name', name, 'phone', phone, 'img', img, 'importance', importance, 'health', health, function(error, result) {
-  //   if (error) {
-  //     console.log('Error adding friend!');
-  //   } else {
-  //     console.log('Friend succesfully added, here are the details: ' + result);
-  //     res.status(200).end();
-  //   }
-  // });
 };
 
 exports.deleteFriend = function(req, res) {
@@ -68,50 +56,12 @@ exports.deleteFriend = function(req, res) {
       res.status(200).end();
     });
   })
-  
-  //DEPRECATED REDIS VERSION
-  // client.del(name, function(error, result) {
-  //   if (error) {
-  //     console.log('Error deleting friend!');
-  //   } else {
-  //     console.log(result + ' entries were deleted!')
-  //     res.status(200).end();
-  //   }
-  // })
 }
 
 exports.getAllFriends = function(req, res) {
-  var user = req.user;
-  
-  //Find the Logged In User by ID and send friends object
-  fbUser.findById(user._id, 'friends', function (err, fbuser) {
+  fbUser.findById(req.user._id, 'friends', function (err, fbuser) {
     res.send(fbuser.friends);
   })
-  
-  //DEPRECATED REDIS VERSION
-  // client.keys('*', function(error, result) {
-  //   var multi = client.multi();
-  //   var total = result.length;
-  //   var i = 0;
-
-  //   if (total === 0) {
-  //     res.send(allFriends);
-  //     return;
-  //   }
-
-  //   result.forEach(function (key) {
-  //       client.hgetall(key, function(error, result) {
-  //         console.log('hgetall result: ', result);
-  //         allFriends.push(result);
-  //         i++;
-
-  //         if (i === total) {
-  //           res.send(allFriends);
-  //           return;
-  //         }
-  //       })
-  //   })
-  // });
 } 
 
 exports.sendText = function(req, res) {
@@ -147,15 +97,6 @@ exports.increaseHealth = function(req, res) {
       res.status(200).end();
     }
   });
-
-  // DEPRECATED REDIS VERSION
-  // client.hincrby(name, 'health', 10*importance, function(error, result) {
-  //   if (error) {
-  //     res.status(400).send(error)
-  //   } else {
-  //     res.status(200).end();
-  //   }
-  // })
 }
 
 exports.pullFBFriendsList = function(clientreq, clientres) {
@@ -285,7 +226,6 @@ exports.tagInTweet = function(clientreq, clientres) {
   var qs = {
       status: clientreq.body.message
   }
-  
   request.post({url: url, oauth: oauth, qs: qs, json: true}, function(err, res, body) {
     if (err) {
       console.log('Error tagging in tweet: ', err)
@@ -301,50 +241,60 @@ exports.tagInTweet = function(clientreq, clientres) {
 
 
 
-//DEPRECATED FUNCTIONS FOR REFERENCE
-//
-//----------------------------
-//tagInFBPOST - HTTP Module Version
-//----------------------------
-// 
-// exports.tagInFBPost= function(clientreq, clientres) {
-  
-//   var message = clientreq.body.message;
-//   var fbID = clientreq.body.fbID;
-   
-//   var options = {
-//     hostname: 'graph.facebook.com',
-//     method: 'POST',
-//     path: '/v2.2/me/feed?access_token=' + clientreq.user.accessToken + '&' + 'message=' + message + '&' + 'place=195383960551614' + '&' + 'tags=' + fbID
-//   }
-  
-//   //Start Request
-//   var req = https.request(options, function(res) {
-//   });
+//DEPRECATED REDIS FUNCTIONS FOR REFERENCE
 
-//     //When request gets response:
-//     req.on('response', function (response) {
-      
-//       var data = "";
-      
-//       //Data response means add to data variable
-//       response.on('data', function (chunk) {
-//         data += chunk;
-//       });
-      
-//       //End response means data collected, send back to client
-//       response.on('end', function(){
-//         clientres.send(data).end()
-//       });
+// exports.addFriend = function(req, res) {
+//  client.hmset(name, 'name', name, 'phone', phone, 'img', img, 'importance', importance, 'health', health, function(error, result) {
+//    if (error) {
+//       console.log('Error adding friend!');
+//     } else {
+//      console.log('Friend succesfully added, here are the details: ' + result);
+//      res.status(200).end();
+//    }
+//  });
+//}
 
-//     });
+// exports.deleteFriend = function(req, res) {
+  // client.del(name, function(error, result) {
+  //   if (error) {
+  //     console.log('Error deleting friend!');
+  //   } else {
+  //     console.log(result + ' entries were deleted!')
+  //     res.status(200).end();
+  //   }
+  // })
+// }
 
-//     //When it gets back Error, then console log it
-//     req.on('error', function(e) {
-//       console.error(e);
-//     });
+// exports.getAllFriends = function(req, res) {
+  // client.keys('*', function(error, result) {
+  //   var multi = client.multi();
+  //   var total = result.length;
+  //   var i = 0;
+  //   if (total === 0) {
+  //     res.send(allFriends);
+  //     return;
+  //   }
+  //   result.forEach(function (key) {
+  //       client.hgetall(key, function(error, result) {
+  //         console.log('hgetall result: ', result);
+  //         allFriends.push(result);
+  //         i++;
 
-//     //Finishes sending the Request
-//     req.end();
+  //         if (i === total) {
+  //           res.send(allFriends);
+  //           return;
+  //         }
+  //       })
+  //   })
+  // });
+// } 
 
+// exports.increaseHealth = function(req, res) {
+  // client.hincrby(name, 'health', 10*importance, function(error, result) {
+  //   if (error) {
+  //     res.status(400).send(error)
+  //   } else {
+  //     res.status(200).end();
+  //   }
+  // })
 // }

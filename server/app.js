@@ -9,9 +9,9 @@ var app = express();
 var passport = require('passport');
 var FacebookStrategy = require('passport-facebook').Strategy;
 var TwitterStrategy = require('passport-twitter').Strategy;
-var config = require('./config');
 
 //Require Friendville Modules
+var config = require('./config');
 var routes = require('./routes');
 var gamelogic = require('./gamelogic');
 var db = require('./db')
@@ -95,8 +95,7 @@ function(req, token, tokenSecret, profile, done) {
   })
 }));
 
-
-
+//Passport serializes and deserializes User from DB to allow use of req.user
 passport.serializeUser(function(user,done) {
   done(null, user.id);
 });
@@ -112,12 +111,11 @@ passport.deserializeUser(function(id, done) {
 
 
 //OAUTH ROUTES
-
-// Redirect the user to Facebook or Twitter for authentication.
+// Redirect the user to Facebook/Twitter for authentication.
 app.get('/auth/facebook', passport.authenticate('facebook', { scope : ["email", "user_friends", "publish_actions"]}));
 app.get('/auth/twitter', passport.authorize('twitter'));
 
-// Facebook or Twitter will redirect the user to this URL after approval.
+// Facebook/Twitter will redirect the user to this URL after approval.
 app.get('/auth/facebook/callback', 
   passport.authenticate('facebook', { successRedirect: '/app',
                                       failureRedirect: '/' }));

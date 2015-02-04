@@ -9,7 +9,6 @@ var globalDecrement = function() {
             doc.friends[key].health--;
             doc.markModified('friends');
             doc.save();
-            
           }
         }
       }
@@ -17,17 +16,12 @@ var globalDecrement = function() {
   })
 }
 
-var decrementSpeed = 1000 *  10;  //Loses 1 health every 10 seconds for demonstration purposes
+var decrementSpeed = 1000 *  1200;  //Loses 1 health every 20 minutes
 setInterval(globalDecrement, decrementSpeed);
-        
 
 
 
-
-
-
-
-//DEPRECATED REDIS VERSION FOR REFERENCE
+//DEPRECATED REDIS VERSION
 //----------------------------
 // var globalDecrement = function() {  
   // client.keys('*', function(error, result) {
