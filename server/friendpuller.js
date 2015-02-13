@@ -22,7 +22,7 @@ process.on('uncaughtException',function(err){
 
 
 
-//DEPRECATED HTTPS MODULE VERISON
+//DEPRECATED HTTPS MODULE VERSION
 
 // process.on('message', function(msg){
     
